@@ -1,5 +1,5 @@
-use serde::{Deserialize, Serialize};
 use chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 #[derive(Debug, Clone, Serialize, Deserialize, sqlx::FromRow)]
@@ -10,7 +10,7 @@ pub struct Task {
     pub priority: Priority,
     pub status: TaskStatus,
     pub category: String,
-    pub estimated_time: i32, // in minutes
+    pub estimated_time: i32,      // in minutes
     pub actual_time: Option<i32>, // in minutes
     pub due_date: Option<DateTime<Utc>>,
     pub created_at: DateTime<Utc>,
@@ -62,7 +62,7 @@ pub struct UpdateTaskRequest {
 impl Task {
     pub fn new(request: CreateTaskRequest) -> Self {
         let now = Utc::now();
-        
+
         Self {
             id: Uuid::new_v4().to_string(),
             title: request.title,
@@ -84,7 +84,7 @@ impl Task {
             self.title = title;
         }
         if let Some(description) = request.description {
-            self.description = description;
+            self.description = Some(description);
         }
         if let Some(priority) = request.priority {
             self.priority = priority;
@@ -103,12 +103,12 @@ impl Task {
             self.estimated_time = estimated_time;
         }
         if let Some(actual_time) = request.actual_time {
-            self.actual_time = actual_time;
+            self.actual_time = Some(actual_time);
         }
         if let Some(due_date) = request.due_date {
-            self.due_date = due_date;
+            self.due_date = Some(due_date);
         }
-        
+
         self.updated_at = Utc::now();
     }
 
@@ -120,9 +120,8 @@ impl Task {
     }
 
     pub fn days_until_due(&self) -> Option<i64> {
-        self.due_date.map(|due_date| {
-            (due_date - Utc::now()).num_days()
-        })
+        self.due_date
+            .map(|due_date| (due_date - Utc::now()).num_days())
     }
 }
 
@@ -130,7 +129,8 @@ impl PartialEq for TaskStatus {
     fn eq(&self, other: &Self) -> bool {
         std::mem::discriminant(self) == std::mem::discriminant(other)
     }
-}#[derive(Debug, Serialize, Deserialize)]
+}
+#[derive(Debug, Serialize, Deserialize, sqlx::FromRow)]
 pub struct AIInsight {
     pub id: String,
     pub message: String,
@@ -139,7 +139,8 @@ pub struct AIInsight {
     pub created_at: DateTime<Utc>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, sqlx::Type)]
+#[sqlx(type_name = "insight_type", rename_all = "lowercase")]
 pub enum InsightType {
     ProductivityTip,
     TaskPrioritization,
@@ -179,7 +180,7 @@ pub struct CommunicationActivity {
     pub keywords_detected: Vec<String>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, sqlx::FromRow)]
 pub struct NotificationItem {
     pub id: String,
     pub title: String,
@@ -190,7 +191,8 @@ pub struct NotificationItem {
     pub action_url: Option<String>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, sqlx::Type)]
+#[sqlx(type_name = "notification_type", rename_all = "lowercase")]
 pub enum NotificationType {
     Accountability,
     TaskReminder,

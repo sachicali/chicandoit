@@ -1,14 +1,14 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/schema.json",
   "build": {
-    "beforeBuildCommand": "npm run build",
-    "beforeDevCommand": "npm run dev",
-    "devPath": "http://localhost:1420",
-    "distDir": "../dist",
+    "beforeBuildCommand": "bun run build",
+    "beforeDevCommand": "bun run dev",
+    "devPath": "http://localhost:3000",
+    "distDir": "../out",
     "withGlobalTauri": true
   },
   "package": {
-    "productName": "Chi Can Do It",
+    "productName": "Vici",
     "version": "0.1.0"
   },
   "tauri": {
@@ -39,11 +39,7 @@
         "all": true
       },
       "os": {
-        "all": false,
-        "platform": true,
-        "version": true,
-        "type": true,
-        "arch": true
+        "all": true
       }
     },
     "bundle": {
@@ -61,8 +57,8 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "identifier": "com.tauri.chicandoit",
-      "longDescription": "A beautiful task management application for achieving your goals with focused intentions.",
+      "identifier": "com.vici.app",
+      "longDescription": "The productivity app that helps you conquer your day. Track tasks, get AI insights, and actually get things done.",
       "macOS": {
         "entitlements": null,
         "exceptionDomain": "",
@@ -71,7 +67,7 @@
         "signingIdentity": null
       },
       "resources": [],
-      "shortDescription": "Chi Can Do It - Task Management",
+      "shortDescription": "Vici - Conquer Your Day",
       "targets": "all",
       "windows": {
         "certificateThumbprint": null,
@@ -80,7 +76,7 @@
       }
     },
     "security": {
-      "csp": null
+      "csp": "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' http://localhost:* ws://localhost:* https://api.openai.com"
     },
     "updater": {
       "active": false
@@ -90,7 +86,7 @@
         "fullscreen": false,
         "height": 700,
         "resizable": true,
-        "title": "Chi Can Do It",
+        "title": "Vici",
         "width": 1000,
         "minWidth": 800,
         "minHeight": 600,

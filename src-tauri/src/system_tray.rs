@@ -1,12 +1,17 @@
-use tauri::{SystemTrayMenu, SystemTrayMenuItem, CustomMenuItem, SystemTrayEvent, Manager};
+// System tray functionality is temporarily disabled until the feature is enabled
+// This module will be re-enabled when the system-tray feature is added to Cargo.toml
+
+/*
 use log::info;
+use tauri::{CustomMenuItem, Manager, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem};
 
 pub fn create_system_tray() -> SystemTrayMenu {
     let show = CustomMenuItem::new("show".to_string(), "Show ChiCanDoIt");
     let hide = CustomMenuItem::new("hide".to_string(), "Hide to Tray");
-    let accountability_check = CustomMenuItem::new("accountability".to_string(), "Trigger Accountability Check");
+    let accountability_check =
+        CustomMenuItem::new("accountability".to_string(), "Trigger Accountability Check");
     let quit = CustomMenuItem::new("quit".to_string(), "Quit");
-    
+
     SystemTrayMenu::new()
         .add_item(show)
         .add_item(hide)
@@ -58,27 +63,32 @@ pub fn handle_system_tray_event(app: &tauri::AppHandle, event: SystemTrayEvent) 
     }
 }
 
-async fn trigger_accountability_from_tray(app_handle: &tauri::AppHandle) -> Result<(), Box<dyn std::error::Error>> {
+async fn trigger_accountability_from_tray(
+    app_handle: &tauri::AppHandle,
+) -> Result<(), Box<dyn std::error::Error>> {
     let state = app_handle.state::<crate::AppState>();
-    
+
     // Get current tasks
     let db = state.db.lock().await;
     let tasks = db.get_all_tasks().await?;
     drop(db);
-    
+
     // Generate accountability message
     let ai_engine = state.ai_engine.lock().await;
     let message = ai_engine.generate_accountability_message(&tasks).await?;
     drop(ai_engine);
-    
+
     // Send notification
     let notifications = state.notifications.lock().await;
-    notifications.send_accountability_notification(&message, app_handle).await?;
+    notifications
+        .send_accountability_notification(&message, app_handle)
+        .await?;
     drop(notifications);
-    
+
     // Emit to frontend
     app_handle.emit_all("accountability_check", &message)?;
-    
+
     info!("Accountability check completed from system tray");
     Ok(())
 }
+*/

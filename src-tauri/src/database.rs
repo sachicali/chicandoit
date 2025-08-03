@@ -1,7 +1,7 @@
-use sqlx::{SqlitePool, Row};
 use anyhow::Result;
 use chrono::Utc;
-use log::{info, error};
+use log::info;
+use sqlx::{Row, SqlitePool};
 
 use crate::models::*;
 
@@ -15,25 +15,25 @@ impl Database {
         let app_dir = dirs::config_dir()
             .ok_or_else(|| anyhow::anyhow!("Could not find config directory"))?
             .join("ChiCanDoIt");
-        
+
         tokio::fs::create_dir_all(&app_dir).await?;
-        
+
         let db_path = app_dir.join("app.db");
-        let database_url = format!("sqlite://{}", db_path.display());
-        
+        let database_url = format!("sqlite://{}?mode=rwc", db_path.display());
+
         info!("Initializing database at: {}", database_url);
-        
+
         let pool = SqlitePool::connect(&database_url).await?;
-        
+
         let db = Self { pool };
         db.run_migrations().await?;
-        
+
         Ok(db)
     }
 
     async fn run_migrations(&self) -> Result<()> {
         info!("Running database migrations...");
-        
+
         // Create tasks table
         sqlx::query(
             r#"
@@ -109,12 +109,12 @@ impl Database {
 
         info!("Database migrations completed successfully");
         Ok(())
-    }    // Task operations
+    } // Task operations
     pub async fn get_all_tasks(&self) -> Result<Vec<Task>> {
         let rows = sqlx::query_as::<_, Task>("SELECT * FROM tasks ORDER BY created_at DESC")
             .fetch_all(&self.pool)
             .await?;
-        
+
         Ok(rows)
     }
 
@@ -123,7 +123,7 @@ impl Database {
             .bind(id)
             .fetch_optional(&self.pool)
             .await?;
-        
+
         Ok(task)
     }
 
@@ -190,11 +190,13 @@ impl Database {
     }
 
     pub async fn get_tasks_by_status(&self, status: TaskStatus) -> Result<Vec<Task>> {
-        let tasks = sqlx::query_as::<_, Task>("SELECT * FROM tasks WHERE status = ? ORDER BY created_at DESC")
-            .bind(status)
-            .fetch_all(&self.pool)
-            .await?;
-        
+        let tasks = sqlx::query_as::<_, Task>(
+            "SELECT * FROM tasks WHERE status = ? ORDER BY created_at DESC",
+        )
+        .bind(status)
+        .fetch_all(&self.pool)
+        .await?;
+
         Ok(tasks)
     }
 
@@ -206,7 +208,7 @@ impl Database {
         .bind(now)
         .fetch_all(&self.pool)
         .await?;
-        
+
         Ok(tasks)
     }
 
@@ -215,16 +217,18 @@ impl Database {
             .fetch_one(&self.pool)
             .await?;
 
-        let completed_tasks: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM tasks WHERE status = 'completed'")
-            .fetch_one(&self.pool)
-            .await?;
+        let completed_tasks: i64 =
+            sqlx::query_scalar("SELECT COUNT(*) FROM tasks WHERE status = 'completed'")
+                .fetch_one(&self.pool)
+                .await?;
 
-        let pending_tasks: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM tasks WHERE status = 'pending'")
-            .fetch_one(&self.pool)
-            .await?;
+        let pending_tasks: i64 =
+            sqlx::query_scalar("SELECT COUNT(*) FROM tasks WHERE status = 'pending'")
+                .fetch_one(&self.pool)
+                .await?;
 
         let overdue_tasks: i64 = sqlx::query_scalar(
-            "SELECT COUNT(*) FROM tasks WHERE due_date < ? AND status != 'completed'"
+            "SELECT COUNT(*) FROM tasks WHERE due_date < ? AND status != 'completed'",
         )
         .bind(Utc::now())
         .fetch_one(&self.pool)
@@ -252,10 +256,10 @@ impl Database {
             completion_rate,
             average_completion_time: avg_completion_time.map(|t| t as f32),
             most_productive_hours: vec![], // TODO: Implement based on completion times
-            common_categories: vec![], // TODO: Implement category analysis
-            weekly_progress: vec![], // TODO: Implement weekly progress tracking
+            common_categories: vec![],     // TODO: Implement category analysis
+            weekly_progress: vec![],       // TODO: Implement weekly progress tracking
         })
-    }    // AI Insights operations
+    } // AI Insights operations
     pub async fn save_ai_insight(&self, insight: AIInsight) -> Result<()> {
         sqlx::query(
             "INSERT INTO ai_insights (id, message, insight_type, confidence, created_at) VALUES (?, ?, ?, ?, ?)"
@@ -273,7 +277,7 @@ impl Database {
 
     pub async fn get_recent_insights(&self, limit: i32) -> Result<Vec<AIInsight>> {
         let insights = sqlx::query_as::<_, AIInsight>(
-            "SELECT * FROM ai_insights ORDER BY created_at DESC LIMIT ?"
+            "SELECT * FROM ai_insights ORDER BY created_at DESC LIMIT ?",
         )
         .bind(limit)
         .fetch_all(&self.pool)
@@ -283,7 +287,7 @@ impl Database {
     }
 
     // Notification operations
-    pub async fn save_notification(&self, notification: NotificationItem) -> Result<()> {
+    pub async fn save_notification(&self, notification: &NotificationItem) -> Result<()> {
         sqlx::query(
             r#"
             INSERT INTO notifications (id, title, message, notification_type, is_read, created_at, action_url)
@@ -305,7 +309,7 @@ impl Database {
 
     pub async fn get_notifications(&self, limit: i32) -> Result<Vec<NotificationItem>> {
         let notifications = sqlx::query_as::<_, NotificationItem>(
-            "SELECT * FROM notifications ORDER BY created_at DESC LIMIT ?"
+            "SELECT * FROM notifications ORDER BY created_at DESC LIMIT ?",
         )
         .bind(limit)
         .fetch_all(&self.pool)
@@ -367,8 +371,8 @@ impl Database {
         let mut activities = Vec::new();
         for row in rows {
             let keywords_json: String = row.get("keywords_detected");
-            let keywords_detected: Vec<String> = serde_json::from_str(&keywords_json)
-                .unwrap_or_default();
+            let keywords_detected: Vec<String> =
+                serde_json::from_str(&keywords_json).unwrap_or_default();
 
             activities.push(CommunicationActivity {
                 service: row.get("service"),

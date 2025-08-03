@@ -1,0 +1,26 @@
+# Ignore node_modules for linting
+node_modules/
+*.min.js
+*.bundle.js
+
+# Ignore build directories
+build/
+dist/
+.next/
+out/
+
+# Ignore data directory
+data/
+
+# Ignore Rust-related files (this is not a Rust project)
+*.rs
+Cargo.toml
+Cargo.lock
+target/
+
+# Ignore Python files in node_modules
+**/*.py
+
+# Ignore third-party packages
+node_modules/**/*
+bun.lockb

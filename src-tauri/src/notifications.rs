@@ -1,23 +1,32 @@
 use anyhow::Result;
+use chrono::Utc;
+use log::{error, info};
 use notify_rust::Notification;
 use uuid::Uuid;
-use chrono::Utc;
-use log::{info, error};
 
 use crate::models::{NotificationItem, NotificationType};
+use tauri::Manager;
 
 pub struct NotificationManager {
     enabled: bool,
 }
 
+impl Default for NotificationManager {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl NotificationManager {
     pub fn new() -> Self {
-        Self {
-            enabled: true,
-        }
+        Self { enabled: true }
     }
 
-    pub async fn send_accountability_notification(&self, message: &str, app_handle: &tauri::AppHandle) -> Result<()> {
+    pub async fn send_accountability_notification(
+        &self,
+        message: &str,
+        app_handle: &tauri::AppHandle,
+    ) -> Result<()> {
         if !self.enabled {
             return Ok(());
         }
@@ -47,11 +56,10 @@ impl NotificationManager {
         };
 
         // Save to database (through app state)
-        if let Ok(state) = app_handle.try_state::<crate::AppState>() {
-            let db = state.db.lock().await;
-            if let Err(e) = db.save_notification(notification.clone()).await {
-                error!("Failed to save notification to database: {}", e);
-            }
+        let state = app_handle.state::<crate::AppState>();
+        let db = state.db.lock().await;
+        if let Err(e) = db.save_notification(&notification).await {
+            error!("Failed to save notification to database: {}", e);
         }
 
         // Emit to frontend
@@ -60,7 +68,12 @@ impl NotificationManager {
         Ok(())
     }
 
-    pub async fn send_task_reminder(&self, task_title: &str, due_in_minutes: i32, app_handle: &tauri::AppHandle) -> Result<()> {
+    pub async fn send_task_reminder(
+        &self,
+        task_title: &str,
+        due_in_minutes: i32,
+        app_handle: &tauri::AppHandle,
+    ) -> Result<()> {
         if !self.enabled {
             return Ok(());
         }
@@ -68,9 +81,15 @@ impl NotificationManager {
         let message = if due_in_minutes <= 0 {
             format!("⚠️ Task '{}' is overdue!", task_title)
         } else if due_in_minutes <= 30 {
-            format!("⏰ Task '{}' is due in {} minutes", task_title, due_in_minutes)
+            format!(
+                "⏰ Task '{}' is due in {} minutes",
+                task_title, due_in_minutes
+            )
         } else {
-            format!("📋 Reminder: '{}' is due in {} minutes", task_title, due_in_minutes)
+            format!(
+                "📋 Reminder: '{}' is due in {} minutes",
+                task_title, due_in_minutes
+            )
         };
 
         // Create desktop notification
@@ -98,11 +117,10 @@ impl NotificationManager {
         };
 
         // Save to database and emit to frontend
-        if let Ok(state) = app_handle.try_state::<crate::AppState>() {
-            let db = state.db.lock().await;
-            if let Err(e) = db.save_notification(notification.clone()).await {
-                error!("Failed to save task reminder notification: {}", e);
-            }
+        let state = app_handle.state::<crate::AppState>();
+        let db = state.db.lock().await;
+        if let Err(e) = db.save_notification(&notification).await {
+            error!("Failed to save task reminder notification: {}", e);
         }
 
         app_handle.emit_all("notification", &notification)?;
@@ -110,7 +128,11 @@ impl NotificationManager {
         Ok(())
     }
 
-    pub async fn send_achievement_notification(&self, achievement: &str, app_handle: &tauri::AppHandle) -> Result<()> {
+    pub async fn send_achievement_notification(
+        &self,
+        achievement: &str,
+        app_handle: &tauri::AppHandle,
+    ) -> Result<()> {
         if !self.enabled {
             return Ok(());
         }
@@ -142,11 +164,10 @@ impl NotificationManager {
         };
 
         // Save to database and emit to frontend
-        if let Ok(state) = app_handle.try_state::<crate::AppState>() {
-            let db = state.db.lock().await;
-            if let Err(e) = db.save_notification(notification.clone()).await {
-                error!("Failed to save achievement notification: {}", e);
-            }
+        let state = app_handle.state::<crate::AppState>();
+        let db = state.db.lock().await;
+        if let Err(e) = db.save_notification(&notification).await {
+            error!("Failed to save achievement notification: {}", e);
         }
 
         app_handle.emit_all("notification", &notification)?;
@@ -154,7 +175,12 @@ impl NotificationManager {
         Ok(())
     }
 
-    pub async fn send_communication_alert(&self, service: &str, count: i32, app_handle: &tauri::AppHandle) -> Result<()> {
+    pub async fn send_communication_alert(
+        &self,
+        service: &str,
+        count: i32,
+        app_handle: &tauri::AppHandle,
+    ) -> Result<()> {
         if !self.enabled || count == 0 {
             return Ok(());
         }
@@ -163,7 +189,10 @@ impl NotificationManager {
             "gmail" => ("mail", format!("📧 {} new emails require attention", count)),
             "discord" => ("chat", format!("💬 {} new Discord messages", count)),
             "messenger" => ("message", format!("📱 {} new messages in Messenger", count)),
-            _ => ("notification", format!("📢 {} new messages in {}", count, service)),
+            _ => (
+                "notification",
+                format!("📢 {} new messages in {}", count, service),
+            ),
         };
 
         // Create desktop notification
@@ -191,11 +220,10 @@ impl NotificationManager {
         };
 
         // Save to database and emit to frontend
-        if let Ok(state) = app_handle.try_state::<crate::AppState>() {
-            let db = state.db.lock().await;
-            if let Err(e) = db.save_notification(notification.clone()).await {
-                error!("Failed to save communication alert: {}", e);
-            }
+        let state = app_handle.state::<crate::AppState>();
+        let db = state.db.lock().await;
+        if let Err(e) = db.save_notification(&notification).await {
+            error!("Failed to save communication alert: {}", e);
         }
 
         app_handle.emit_all("notification", &notification)?;
@@ -205,7 +233,10 @@ impl NotificationManager {
 
     pub fn set_enabled(&mut self, enabled: bool) {
         self.enabled = enabled;
-        info!("Notifications {}", if enabled { "enabled" } else { "disabled" });
+        info!(
+            "Notifications {}",
+            if enabled { "enabled" } else { "disabled" }
+        );
     }
 
     pub fn is_enabled(&self) -> bool {
