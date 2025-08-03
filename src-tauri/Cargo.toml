@@ -1,0 +1,36 @@
+[package]
+name = "chi-can-do-it"
+version = "1.0.0"
+description = "AI-powered daily agenda tracker with real-time accountability"
+authors = ["ChiCanDoIt Team"]
+license = "MIT"
+repository = "https://github.com/your-org/chi-can-do-it"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[build-dependencies]
+tauri-build = { version = "1.5", features = [] }
+
+[dependencies]
+tauri = { version = "1.5", features = [ "window-all", "shell-open", "notification-all", "system-tray", "api-all"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tokio = { version = "1.0", features = ["full"] }
+reqwest = { version = "0.11.22", features = ["json"] }
+sqlx = { version = "0.7", features = ["runtime-tokio-rustls", "sqlite", "chrono", "uuid"] }
+chrono = { version = "0.4", features = ["serde"] }
+uuid = { version = "1.0", features = ["v4"] }
+anyhow = "1.0"
+thiserror = "1.0"
+log = "0.4"
+env_logger = "0.10"
+dotenv = "0.15"
+notify-rust = "4.8"
+dirs = "5.0"
+async-trait = "0.1"
+futures = "0.3"
+
+[features]
+# This feature is used for production builds or when a dev server is not specified, DO NOT REMOVE!!
+custom-protocol = ["tauri/custom-protocol"]
