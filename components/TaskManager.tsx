@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useCallback, useMemo, memo } from 'react'
 import { CheckCircle, Clock, AlertCircle, Plus } from 'lucide-react'
 
 interface Task {
@@ -18,7 +18,7 @@ interface TaskManagerProps {
   onDeleteTask?: (id: string) => Promise<void>
 }
 
-const TaskManager: React.FC<TaskManagerProps> = ({ tasks, onCreateTask, onUpdateTask }) => {
+const TaskManager: React.FC<TaskManagerProps> = memo(({ tasks, onCreateTask, onUpdateTask }) => {
   const [newTask, setNewTask] = useState({
     task: '',
     priority: 'medium',
@@ -27,7 +27,7 @@ const TaskManager: React.FC<TaskManagerProps> = ({ tasks, onCreateTask, onUpdate
   });
   const [isAddingTask, setIsAddingTask] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTask.task.trim()) return;
 
@@ -43,40 +43,40 @@ const TaskManager: React.FC<TaskManagerProps> = ({ tasks, onCreateTask, onUpdate
     } catch (error) {
       console.error('Failed to create task:', error);
     }
-  };
+  }, [newTask, onCreateTask]);
 
-  const toggleTaskStatus = async (task: Task) => {
+  const toggleTaskStatus = useCallback(async (task: Task) => {
     const newStatus = task.status === 'completed' ? 'pending' : 'completed';
     await onUpdateTask(task.id, { status: newStatus });
-  };
+  }, [onUpdateTask]);
 
-  const updateTaskPriority = async (task: Task, priority: string) => {
+  const updateTaskPriority = useCallback(async (task: Task, priority: string) => {
     await onUpdateTask(task.id, { priority });
-  };
+  }, [onUpdateTask]);
 
-  const getPriorityColor = (priority: string) => {
+  const getPriorityColor = useCallback((priority: string) => {
     switch(priority) {
       case 'high':
-        return 'border-red-200 bg-red-50 text-red-800';
+        return 'border-red-200 bg-red-50 text-red-800 dark:border-red-800 dark:bg-red-950/30 dark:text-red-400';
       case 'medium':
-        return 'border-yellow-200 bg-yellow-50 text-yellow-800';
+        return 'border-yellow-200 bg-yellow-50 text-yellow-800 dark:border-yellow-800 dark:bg-yellow-950/30 dark:text-yellow-400';
       case 'low':
-        return 'border-green-200 bg-green-50 text-green-800';
+        return 'border-green-200 bg-green-50 text-green-800 dark:border-green-800 dark:bg-green-950/30 dark:text-green-400';
       default:
-        return 'border-gray-200 bg-gray-50 text-gray-800';
+        return 'border-gray-200 bg-gray-50 text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300';
     }
-  };
+  }, []);
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = useCallback((status: string) => {
     switch(status) {
       case 'completed':
-        return 'bg-green-100 text-green-800';
+        return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
       case 'in-progress':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
     }
-  };
+  }, []);
 
   return (
     <div className="bg-white rounded-lg shadow">
@@ -236,6 +236,8 @@ const TaskManager: React.FC<TaskManagerProps> = ({ tasks, onCreateTask, onUpdate
       </div>
     </div>
   );
-};
+});
+
+TaskManager.displayName = 'TaskManager';
 
 export default TaskManager;

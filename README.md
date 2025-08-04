@@ -1,18 +1,28 @@
-# Chi Can Do It 🌟
+# ChiCanDoIt 🚀
 
-A beautiful, native desktop task management application built with Rust, Tauri, and React. Transform your productivity with focused intentions and elegant design.
+An AI-powered daily agenda tracker that keeps you accountable and helps you conquer your goals. Built with Next.js, React, and modern web technologies for a blazing-fast, responsive experience.
 
-![Chi Can Do It](./preview.png)
+![ChiCanDoIt](./preview.png)
 
 ## ✨ Features
 
-- **Beautiful Native UI** - Smooth, responsive interface with modern design
-- **Cross-Platform** - Windows, macOS, and Linux support
-- **Focused Task Management** - Organize tasks by priority and category
-- **Goal Tracking** - Set and track progress towards your objectives
-- **Data Export/Import** - Backup and sync your tasks across devices
-- **Offline First** - Works completely offline with local data storage
-- **Lightning Fast** - Built with Rust for maximum performance
+### Core Functionality
+- **AI-Powered Task Management** - Smart prioritization and insights powered by OpenAI
+- **Real-time Accountability** - Get hourly check-ins and progress updates
+- **Smart Notifications** - Never miss what matters with intelligent reminders
+- **Beautiful UI/UX** - Modern, responsive design with dark mode support
+- **Keyboard Shortcuts** - Power-user friendly with comprehensive shortcuts
+- **Drag & Drop** - Intuitive task reordering with smooth animations
+- **Performance Optimized** - Sub-200KB bundle size for lightning-fast loading
+
+### Recent Enhancements (v2.0)
+- **🎨 Dark Mode** - System-aware theme with manual override
+- **⌨️ Keyboard Navigation** - Complete keyboard control for power users
+- **🔄 Drag-and-Drop** - Visual task reordering with haptic feedback
+- **📱 Mobile Responsive** - Perfect experience on all devices
+- **⚡ Performance Monitor** - Real-time Core Web Vitals tracking
+- **🔍 SEO Optimized** - Enterprise-level SEO implementation
+- **♿ Accessibility** - WCAG 2.1 AA compliant
 
 ## 🚀 Quick Start
 
